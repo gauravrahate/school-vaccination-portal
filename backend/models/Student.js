@@ -1,16 +1,36 @@
 const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema({
-  name: String,
-  studentId: String,
-  class: String,
-  vaccinated: { type: Boolean, default: false },
-  vaccinations: [
-    {
-      vaccine: String,
-      date: Date
+  studentId: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  class: {
+    type: String,
+    required: true
+  },
+  dateOfBirth: {
+    type: Date,
+    required: true
+  },
+  vaccinations: [{
+    vaccineName: String,
+    driveId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'VaccinationDrive'
+    },
+    date: Date,
+    status: {
+      type: String,
+      enum: ['pending', 'completed'],
+      default: 'pending'
     }
-  ]
-});
+  }]
+}, { timestamps: true });
 
 module.exports = mongoose.model('Student', studentSchema);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const Students = () => {
@@ -8,6 +8,17 @@ const Students = () => {
     grade: '',
     vaccineStatus: false
   });
+
+  // Fetch students when the component mounts
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/students')
+      .then(response => {
+        setStudents(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching students:', error);
+      });
+  }, []);
 
   const handleAddStudent = () => {
     axios.post('http://localhost:5000/api/students', newStudent)
@@ -26,6 +37,11 @@ const Students = () => {
     axios.post('http://localhost:5000/api/students/bulk-upload', formData)
       .then(response => {
         alert('Students uploaded successfully');
+        // Optionally, refresh the student list after upload
+        return axios.get('http://localhost:5000/api/students');
+      })
+      .then(response => {
+        setStudents(response.data);
       })
       .catch(error => console.error('Error uploading file:', error));
   };
@@ -36,17 +52,25 @@ const Students = () => {
       <form>
         <div className="mb-3">
           <label>Name</label>
-          <input type="text" className="form-control" 
-            value={newStudent.name} 
-            onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })} />
+          <input
+            type="text"
+            className="form-control"
+            value={newStudent.name}
+            onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
+          />
         </div>
         <div className="mb-3">
           <label>Grade</label>
-          <input type="text" className="form-control"
-            value={newStudent.grade} 
-            onChange={(e) => setNewStudent({ ...newStudent, grade: e.target.value })} />
+          <input
+            type="text"
+            className="form-control"
+            value={newStudent.grade}
+            onChange={(e) => setNewStudent({ ...newStudent, grade: e.target.value })}
+          />
         </div>
-        <button type="button" className="btn btn-primary" onClick={handleAddStudent}>Add Student</button>
+        <button type="button" className="btn btn-primary" onClick={handleAddStudent}>
+          Add Student
+        </button>
       </form>
 
       <hr />

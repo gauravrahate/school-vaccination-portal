@@ -1,52 +1,61 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-
-import Dashboard from './pages/Dashboard';
-import Students from './pages/Students';
-import Drives from './pages/Drives';
-import Reports from './pages/Reports';
-import Login from './pages/Login';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import StudentManagement from './components/StudentManagement';
+import VaccinationDriveManagement from './components/VaccinationDriveManagement';
+import Reports from './components/Reports';
 import Layout from './components/Layout';
 
-function RequireAuth({ children }) {
-  const navigate = useNavigate();
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+});
 
-  useEffect(() => {
-    const isLoggedIn = sessionStorage.getItem('loggedIn') === 'true';
-    if (!isLoggedIn) {
-      navigate('/login');
-    }
-  }, [navigate]);
+const PrivateRoute = ({ children }) => {
+  const { user, loading } = useAuth();
 
-  return children;
-}
+  if (loading) {
+    return null;
+  }
 
-function AppRoutes() {
-  useEffect(() => {
-    window.addEventListener('beforeunload', () => {
-      sessionStorage.removeItem('loggedIn');
-    });
-  }, []);
+  return user ? children : <Navigate to="/login" />;
+};
 
+const App = () => {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/" element={<RequireAuth><Layout /></RequireAuth>}>
-        <Route index element={<Dashboard />} />
-        <Route path="students" element={<Students />} />
-        <Route path="drives" element={<Drives />} />
-        <Route path="reports" element={<Reports />} />
-      </Route>
-    </Routes>
+    <ThemeProvider theme={theme}>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <Layout />
+                </PrivateRoute>
+              }
+            >
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="students" element={<StudentManagement />} />
+              <Route path="drives" element={<VaccinationDriveManagement />} />
+              <Route path="reports" element={<Reports />} />
+            </Route>
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
-}
-
-function App() {
-  return (
-    <Router>
-      <AppRoutes />
-    </Router>
-  );
-}
+};
 
 export default App;
